@@ -1,5 +1,6 @@
 // App.tsx
 import { useState, useEffect, useRef } from "react";
+import { useAuthenticator } from "@aws-amplify/ui-react";
 import {
   useForm,
   Controller,
@@ -32,6 +33,7 @@ interface ComparisonResponse {
 const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
+  const { signOut } = useAuthenticator();
   const image1Ref = useRef<HTMLInputElement | null>(null);
   const image2Ref = useRef<HTMLInputElement | null>(null);
   const [preview1, setPreview1] = useState<string | null>(null);
@@ -268,19 +270,28 @@ function App() {
   };
 
   return (
-    <div className="container py-5">
-      <h1 className="text-center mb-4">Image Comparison</h1>
-      {error && (
-        <div className="alert alert-danger" role="alert">
-          {error}
+    <>
+      {/* Navbar */}
+      <nav className="navbar navbar-expand-lg navbar-light bg-primary">
+        <div className="container-fluid">
+          <span className="navbar-brand mb-0 h1 text-white">Image Comparison</span>
+          <button className="btn btn-outline-light ms-auto" onClick={signOut} type="button">
+            Sign Out
+          </button>
         </div>
-      )}
+      </nav>
+      <div className="container py-3">
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
         {/* Model select */}
         <div className="mb-4">
           <label htmlFor="modelSelect" className="form-label">
-            Select Model
+            <h4>Select Model</h4>
           </label>
           <Controller
             name="selectedModel"
@@ -297,9 +308,9 @@ function App() {
           />
         </div>
 
-        <div className="row mb-4">
+        <div className="row mb-3">
           <div className="col-md-6">
-            <h3>Image 1</h3>
+            <h4>Image 1</h4>
             <Controller
               name="image1"
               control={control}
@@ -338,7 +349,7 @@ function App() {
             )}
           </div>
           <div className="col-md-6">
-            <h3>Image 2</h3>
+            <h4>Image 2</h4>
             <Controller
               name="image2"
               control={control}
@@ -379,7 +390,7 @@ function App() {
         </div>
 
         {/* Prompt full width */}
-        <div className="row mt-5">
+        <div className="row">
           <div className="col-12">
             <h4>Prompt</h4>
             <Controller
@@ -438,8 +449,9 @@ function App() {
             </div>
           </div>
         </div>
-      </form>
-    </div>
+        </form>
+      </div>
+    </>
   );
 }
 
