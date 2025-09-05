@@ -60,7 +60,7 @@ function App() {
     if (accessToken) return accessToken;
     try {
       const session = await fetchAuthSession();
-      const token = session.tokens.accessToken.toString();
+      const token = session.tokens?.accessToken.toString() ?? null;
       setAccessToken(token);
       return token;
     } catch (e) {
