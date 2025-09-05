@@ -14,6 +14,8 @@ import ModelSelect from "./ModelSelect";
 interface Model {
   index: string;
   default: boolean;
+  name: string;
+  description: string;
 }
 
 interface PresignedData {
