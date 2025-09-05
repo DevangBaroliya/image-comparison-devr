@@ -269,7 +269,7 @@ function App() {
   };
 
   const removeImage = (
-    fieldName: string,
+    fieldName: "image1" | "image2" | "customPrompt" | "selectedModel",
     setPreview: React.Dispatch<React.SetStateAction<string | null>>,
     inputRef: React.RefObject<HTMLInputElement>
   ) => {
