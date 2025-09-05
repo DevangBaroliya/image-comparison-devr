@@ -170,18 +170,15 @@ function App() {
     img2: { type: string; ext: string }
   ) => {
     try {
-      const token = await getAccessToken();
       await Promise.all([
         axios.put(presignedData.image1_presigned_url, file1, {
           headers: {
             "Content-Type": img1.type,
-            Authorization: `Bearer ${token}`,
           },
         }),
         axios.put(presignedData.image2_presigned_url, file2, {
           headers: {
             "Content-Type": img2.type,
-            Authorization: `Bearer ${token}`,
           },
         }),
       ]);
