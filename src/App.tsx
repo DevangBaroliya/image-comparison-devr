@@ -32,6 +32,13 @@ interface ComparisonResponse {
   };
 }
 
+interface FormData {
+  image1: FileList | null;
+  image2: FileList | null;
+  customPrompt: string;
+  selectedModel: string;
+}
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
@@ -52,7 +59,7 @@ function App() {
     reset,
     formState: { errors },
     setValue,
-  } = useForm<FieldValues>({
+  } = useForm<FormData>({
     defaultValues: {
       image1: null,
       image2: null,
@@ -276,8 +283,14 @@ function App() {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg navbar-light bg-primary">
         <div className="container-fluid">
-          <span className="navbar-brand mb-0 h1 text-white">Image Comparison</span>
-          <button className="btn btn-outline-light ms-auto" onClick={signOut} type="button">
+          <span className="navbar-brand mb-0 h1 text-white">
+            Image Comparison
+          </span>
+          <button
+            className="btn btn-outline-light ms-auto"
+            onClick={signOut}
+            type="button"
+          >
             Sign Out
           </button>
         </div>
@@ -290,167 +303,171 @@ function App() {
         )}
 
         <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Model select */}
-        <div className="mb-4">
-          <label htmlFor="modelSelect" className="form-label">
-            <h4>Select Model</h4>
-          </label>
-          <Controller
-            name="selectedModel"
-            control={control}
-            render={({ field }) => (
-              <ModelSelect
-                models={models}
-                error={error && models.length === 0 ? error : null}
-                loading={modelsLoading}
-                onChange={(value) => field.onChange(value)}
-                value={field.value}
+          {/* Model select */}
+          <div className="mb-4">
+            <label htmlFor="modelSelect" className="form-label">
+              <h4>Select Model</h4>
+            </label>
+            <Controller
+              name="selectedModel"
+              control={control}
+              render={({ field }) => (
+                <ModelSelect
+                  models={models}
+                  error={error && models.length === 0 ? error : null}
+                  loading={modelsLoading}
+                  onChange={(value) => field.onChange(value)}
+                  value={field.value}
+                />
+              )}
+            />
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <h4>Image 1</h4>
+              <Controller
+                name="image1"
+                control={control}
+                rules={{ required: "Image 1 is required" }}
+                render={({ field }) => (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className={`form-control mb-3 ${
+                      errors.image1 ? "is-invalid" : ""
+                    }`}
+                    onChange={(e) => handleImageChange(e, field, setPreview1)}
+                    ref={image1Ref}
+                  />
+                )}
               />
-            )}
-          />
-        </div>
-
-        <div className="row mb-3">
-          <div className="col-md-6">
-            <h4>Image 1</h4>
-            <Controller
-              name="image1"
-              control={control}
-              rules={{ required: "Image 1 is required" }}
-              render={({ field }) => (
-                <input
-                  type="file"
-                  accept="image/*"
-                  className={`form-control mb-3 ${
-                    errors.image1 ? "is-invalid" : ""
-                  }`}
-                  onChange={(e) => handleImageChange(e, field, setPreview1)}
-                  ref={image1Ref}
-                />
+              {errors.image1 && (
+                <div className="invalid-feedback">{errors.image1.message}</div>
+              )}{" "}
+              {preview1 && (
+                <div className="position-relative">
+                  <img
+                    src={preview1}
+                    alt="Image 1 Preview"
+                    className="img-fluid"
+                    style={{ maxHeight: "250px" }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-sm position-absolute top-0 end-0"
+                    onClick={() =>
+                      removeImage("image1", setPreview1, image1Ref)
+                    }
+                  >
+                    Remove
+                  </button>
+                </div>
               )}
-            />
-            {errors.image1 && (
-              <div className="invalid-feedback">{errors.image1.message}</div>
-            )}
-            {preview1 && (
-              <div className="position-relative">
-                <img
-                  src={preview1}
-                  alt="Image 1 Preview"
-                  className="img-fluid"
-                  style={{ maxHeight: "250px" }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-danger btn-sm position-absolute top-0 end-0"
-                  onClick={() => removeImage("image1", setPreview1, image1Ref)}
-                >
-                  Remove
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="col-md-6">
-            <h4>Image 2</h4>
-            <Controller
-              name="image2"
-              control={control}
-              rules={{ required: "Image 2 is required" }}
-              render={({ field }) => (
-                <input
-                  type="file"
-                  accept="image/*"
-                  className={`form-control mb-3 ${
-                    errors.image2 ? "is-invalid" : ""
-                  }`}
-                  onChange={(e) => handleImageChange(e, field, setPreview2)}
-                  ref={image2Ref}
-                />
+            </div>
+            <div className="col-md-6">
+              <h4>Image 2</h4>
+              <Controller
+                name="image2"
+                control={control}
+                rules={{ required: "Image 2 is required" }}
+                render={({ field }) => (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className={`form-control mb-3 ${
+                      errors.image2 ? "is-invalid" : ""
+                    }`}
+                    onChange={(e) => handleImageChange(e, field, setPreview2)}
+                    ref={image2Ref}
+                  />
+                )}
+              />
+              {errors.image2 && (
+                <div className="invalid-feedback">{errors.image2.message}</div>
+              )}{" "}
+              {preview2 && (
+                <div className="position-relative">
+                  <img
+                    src={preview2}
+                    alt="Image 2 Preview"
+                    className="img-fluid"
+                    style={{ maxHeight: "250px" }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-sm position-absolute top-0 end-0"
+                    onClick={() =>
+                      removeImage("image2", setPreview2, image2Ref)
+                    }
+                  >
+                    Remove
+                  </button>
+                </div>
               )}
-            />
-            {errors.image2 && (
-              <div className="invalid-feedback">{errors.image2.message}</div>
-            )}
-            {preview2 && (
-              <div className="position-relative">
-                <img
-                  src={preview2}
-                  alt="Image 2 Preview"
-                  className="img-fluid"
-                  style={{ maxHeight: "250px" }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-danger btn-sm position-absolute top-0 end-0"
-                  onClick={() => removeImage("image2", setPreview2, image2Ref)}
-                >
-                  Remove
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Prompt full width */}
-        <div className="row">
-          <div className="col-12">
-            <h4>Prompt</h4>
-            <Controller
-              name="customPrompt"
-              control={control}
-              render={({ field }) => (
-                <textarea
-                  {...field}
-                  className="form-control"
-                  rows={8}
-                  placeholder="Enter a custom prompt, or leave blank to use default..."
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Buttons below prompt */}
-        <div className="text-center mb-4 mt-4">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading || modelsLoading || models.length === 0}
-          >
-            {loading ? (
-              <span
-                className="spinner-border spinner-border-sm me-2"
-                role="status"
-                aria-hidden="true"
-              ></span>
-            ) : null}
-            {loading ? "Processing..." : "Compare Images"}
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary ms-2"
-            onClick={handleReset}
-          >
-            Reset
-          </button>
-        </div>
-
-        {/* Summary full width below buttons */}
-        <div className="row mb-4">
-          <div className="col-12">
-            <h4>Summary</h4>
-            <div
-              style={{
-                backgroundColor: "#f8f9fa",
-                padding: "1rem",
-                borderRadius: "5px",
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {response?.data?.comparison_summary ?? "No summary available."}
             </div>
           </div>
-        </div>
+
+          {/* Prompt full width */}
+          <div className="row">
+            <div className="col-12">
+              <h4>Prompt</h4>
+              <Controller
+                name="customPrompt"
+                control={control}
+                render={({ field }) => (
+                  <textarea
+                    {...field}
+                    className="form-control"
+                    rows={8}
+                    placeholder="Enter a custom prompt, or leave blank to use default..."
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Buttons below prompt */}
+          <div className="text-center mb-4 mt-4">
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading || modelsLoading || models.length === 0}
+            >
+              {loading ? (
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+              ) : null}
+              {loading ? "Processing..." : "Compare Images"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary ms-2"
+              onClick={handleReset}
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Summary full width below buttons */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <h4>Summary</h4>
+              <div
+                style={{
+                  backgroundColor: "#f8f9fa",
+                  padding: "1rem",
+                  borderRadius: "5px",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {response?.data?.comparison_summary ?? "No summary available."}
+              </div>
+            </div>
+          </div>
         </form>
       </div>
     </>
