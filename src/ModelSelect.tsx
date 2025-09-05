@@ -3,7 +3,9 @@ import React from "react";
 // Define the Model interface
 interface Model {
   index: string;
+  default: boolean;
   name: string;
+  description: string;
 }
 
 // Define the props interface for the ModelSelect component
