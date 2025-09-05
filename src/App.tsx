@@ -1,5 +1,6 @@
 // App.tsx
 import { useState, useEffect, useRef } from "react";
+import { fetchAuthSession } from "@aws-amplify/auth";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import {
   useForm,
@@ -52,6 +53,21 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [models, setModels] = useState<Model[]>([]);
   const [modelsLoading, setModelsLoading] = useState<boolean>(true);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  // Fetch and cache access token
+  const getAccessToken = async () => {
+    if (accessToken) return accessToken;
+    try {
+      const session = await fetchAuthSession();
+      const token = session.tokens.accessToken.toString();
+      setAccessToken(token);
+      return token;
+    } catch (e) {
+      console.error("Error fetching access token:", e);
+      return null;
+    }
+  };
 
   const {
     control,
@@ -85,7 +101,10 @@ function App() {
     const fetchModels = async () => {
       setModelsLoading(true);
       try {
-        const res = await axios.get(`${API_URL}/models`);
+        const token = await getAccessToken();
+        const res = await axios.get(`${API_URL}/models`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const fetchedModels = res.data.models;
         setModels(fetchedModels);
         if (fetchedModels.length > 0) {
@@ -112,12 +131,19 @@ function App() {
     img2: { type: string; ext: string }
   ) => {
     try {
-      const response = await axios.post(`${API_URL}/get-presigned-urls`, {
-        image1_content_type: img1.type,
-        image1_extension: img1.ext,
-        image2_content_type: img2.type,
-        image2_extension: img2.ext,
-      });
+      const token = await getAccessToken();
+      const response = await axios.post(
+        `${API_URL}/get-presigned-urls`,
+        {
+          image1_content_type: img1.type,
+          image1_extension: img1.ext,
+          image2_content_type: img2.type,
+          image2_extension: img2.ext,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       const presignedData = response.data?.data;
       if (
@@ -144,12 +170,19 @@ function App() {
     img2: { type: string; ext: string }
   ) => {
     try {
+      const token = await getAccessToken();
       await Promise.all([
         axios.put(presignedData.image1_presigned_url, file1, {
-          headers: { "Content-Type": img1.type },
+          headers: {
+            "Content-Type": img1.type,
+            Authorization: `Bearer ${token}`,
+          },
         }),
         axios.put(presignedData.image2_presigned_url, file2, {
-          headers: { "Content-Type": img2.type },
+          headers: {
+            "Content-Type": img2.type,
+            Authorization: `Bearer ${token}`,
+          },
         }),
       ]);
       return true;
@@ -165,12 +198,19 @@ function App() {
     data: FieldValues
   ) => {
     try {
-      const response = await axios.post(`${API_URL}/compare-images`, {
-        s3_keys: presignedData.s3_keys,
-        base_folder: presignedData.base_folder,
-        prompt: data.customPrompt,
-        model_index: data.selectedModel,
-      });
+      const token = await getAccessToken();
+      const response = await axios.post(
+        `${API_URL}/compare-images`,
+        {
+          s3_keys: presignedData.s3_keys,
+          base_folder: presignedData.base_folder,
+          prompt: data.customPrompt,
+          model_index: data.selectedModel,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data;
     } catch (err) {
       setError("Failed to compare images. Please try again.");
@@ -475,19 +515,3 @@ function App() {
 }
 
 export default App;
-
-// import { useAuthenticator } from "@aws-amplify/ui-react";
-// import "bootstrap/dist/css/bootstrap.min.css";
-// import "bootstrap/dist/js/bootstrap.bundle.min.js";
-
-// function App() {
-//   const { signOut } = useAuthenticator();
-//   return (
-//     <main>
-//       <h1>Hello, Devang</h1>
-//       <button onClick={signOut}>Sign Out</button>
-//     </main>
-//   );
-// }
-
-// export default App;
